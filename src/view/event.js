@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import {converDataAfterCompare, dateFormat} from './../util.js';
 
 const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, price}) =>
@@ -15,7 +14,6 @@ export const createEventTemplate = (point) => {
   const buttonActive = (isFavorite === true)
     ? 'event__favorite-btn--active'
     : '';
-  const compareDate = converDataAfterCompare(dateTo, dateFrom);
 
   return `<li class="trip-events__item">
 <div class="event">
@@ -28,9 +26,9 @@ export const createEventTemplate = (point) => {
     <p class="event__time">
       <time class="event__start-time" datetime="${dateFormat(dateFrom,'YYYY-MM-DDTHH:mm')}">${dateFormat(dateFrom,'HH:mm')}</time>
       &mdash;
-      <time class="event__end-time" datetime="${dateFormat(dateFrom,'YYYY-MM-DDTHH:mm')}">${dateFormat(dateTo,'HH:mm')}</time>
+      <time class="event__end-time" datetime="${dateFormat(dateTo,'YYYY-MM-DDTHH:mm')}">${dateFormat(dateTo,'HH:mm')}</time>
     </p>
-    <p class="event__duration">${compareDate}</p>
+    <p class="event__duration">${converDataAfterCompare(dateTo, dateFrom)}</p>
   </div>
   <p class="event__price">
     &euro;&nbsp;<span class="event__price-value">${basePrice}</span>

@@ -1,5 +1,8 @@
 import {DESCRIPTION_TEXT} from './const.js';
 import dayjs from 'dayjs';
+
+export const dateFormat = (date, temp) => dayjs(date).format(temp);
+
 //случайное число
 export const getRandomInteger = (a = 0, b = 1) => {
   const lower = Math.ceil(Math.min(a, b));
@@ -22,17 +25,25 @@ export const shuffleArray = (arr) => {
   return arr;
 };
 
-const MILLISECONDS_IN_HOUR = 3600000;
-const MILLISECONDS_IN_DAY = 86400000;
+const MILLISECOND_IN_HOUR = 3600000;
+const MILLISECOND_IN_DAY = 86400000;
+const MILLISECOND_IN_MINUT = 60000;
 
 export const converDataAfterCompare = (dateA,dateB) => {
-  const compareTwoDates = dayjs(dateA).diff(dateB);
-  if (compareTwoDates < MILLISECONDS_IN_HOUR){
-    return dayjs(compareTwoDates, 'SSS').format('m[M]');
-  } else if (compareTwoDates < MILLISECONDS_IN_DAY){
-    return dayjs(compareTwoDates, 'SSS').format('H[H] m[M]');
+  const timeTo = dateFormat(dateA,'YYYY-MM-DDTHH:mm');
+  const timeFrom = dateFormat(dateB,'YYYY-MM-DDTHH:mm');
+  const compareTwoDates = dayjs(timeTo).diff(dayjs(timeFrom));
+
+  const days = Math.floor(compareTwoDates / MILLISECOND_IN_DAY);
+  const hours = Math.floor((compareTwoDates - days * MILLISECOND_IN_DAY)/ MILLISECOND_IN_HOUR);
+  const minutes = Math.round((compareTwoDates - days * MILLISECOND_IN_DAY - hours * MILLISECOND_IN_HOUR)/ MILLISECOND_IN_MINUT);
+
+  if (compareTwoDates < MILLISECOND_IN_HOUR){
+    return `${minutes}M`;
+  } else if (compareTwoDates > MILLISECOND_IN_HOUR && compareTwoDates < MILLISECOND_IN_DAY) {
+    return `${hours}H ${minutes}M`;
   }
-  return dayjs(compareTwoDates, 'SSS').format('D[D] H[H] m[M]');
+  return `${days}D ${hours}H ${minutes}M`;
 };
 
 
@@ -47,4 +58,3 @@ export const generateDescription = (SENTENCE_COUNT_MIN, SENTENCE_COUNT_MAX) => {
   }
   return descriptionArr.join('. ');
 };
-export const dateFormat = (date, temp) => dayjs(date).format(temp);

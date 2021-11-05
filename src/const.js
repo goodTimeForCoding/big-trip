@@ -39,13 +39,6 @@ export const OFFERS = [
   },
 ];
 
-export const DateFormat = {
-  DAY_MONTH: 'D MMM',
-  HOUR_MINUTE: 'hh:mm',
-  ISO: 'YYYY-MM-DDTHH:mm',
-  DATE_HOUR: 'DD/MM/YY HH:mm',
-};
-
 export const BasePrice = {
   MIN: 20,
   MAX: 1400,
@@ -62,7 +55,7 @@ export const MAX_SENTECES = 5;
 
 export const Period = {
   START_DATE_MIN: -7,
-  START_DATE_MAX: 0,
+  START_DATE_MAX: -1,
   DATE_FROM_MIN: 60,
   DATE_FROM_MAX: 120,
   DATE_TO_MIN: 30,

@@ -1,5 +1,8 @@
 import {TYPES, TOWNS} from './../const.js';
-import {dateFormat} from './../util.js';
+import {dateFormat, getRandomElementArr, getRandomInteger} from './../util.js';
+import dayjs from 'dayjs';
+
+const createPicturesTemp = (picturesArr) => picturesArr.map((picture) => ` <img class="event__photo" src="${picture.src}" alt="${picture.alt}">`).join('');
 
 
 const createDestinationTemp = (destination) => {
@@ -9,11 +12,7 @@ const createDestinationTemp = (destination) => {
     <p class="event__destination-description">${destination.description}</p>
     <div class="event__photos-container">
     <div class="event__photos-tape">
-    <img class="event__photo" src="img/photos/1.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/2.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/3.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/4.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/5.jpg" alt="Event photo">
+    ${createPicturesTemp(destination.picture)}
     </div>
   </div>
   </section>`;
@@ -27,11 +26,7 @@ const createDestinationTemp = (destination) => {
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <div class="event__photos-container">
     <div class="event__photos-tape">
-    <img class="event__photo" src="img/photos/1.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/2.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/3.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/4.jpg" alt="Event photo">
-    <img class="event__photo" src="img/photos/5.jpg" alt="Event photo">
+    ${createPicturesTemp(destination.picture)}
     </div>
   </div>
   </section>`;
@@ -51,22 +46,35 @@ const createTownsTemplate = (cities) => cities.map((city) => `<option value="${c
 const createOfferTemp = (offers) => offers.length > 0 ?
   `<section class="event__section  event__section--offers">
 <h3 class="event__section-title  event__section-title--offers">Offers</h3> <div class="event__available-offers">
-${offers.map(({title, price}) =>
-    `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-luggage-1" type="checkbox" name="event-offer-luggage" checked>
-  <label class="event__offer-label" for="event-offer-luggage-1">
+${offers.map(({title, price}) => {
+    const offerClassName = title.split(' ').pop();
+    const checkedAttribute = getRandomInteger() ? 'checked' : '';
+    return `<div class="event__offer-selector">
+  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerClassName}-1" type="checkbox" name="event-offer-${offerClassName}" ${checkedAttribute}>
+  <label class="event__offer-label" for="event-offer-${offerClassName}-1">
     <span class="event__offer-title">${title}</span>
     &plus;&euro;&nbsp;
     <span class="event__offer-price">${price}</span>
   </label>
-</div>`).join('')}
+</div>`;
+  }).join('')}
 </div></section>`
   : '';
 
 
-export const createEditPointTemplate = (point) => {
-  const {type, destination, dateFrom, dateTo, basePrice, offers} = point;
-  return`<li class="trip-events__item">
+export const createEditPointTemplate = (point = {}) => {const {
+  type = getRandomElementArr(TYPES),
+  offers = [],
+  destination = {
+    town: getRandomElementArr(TOWNS),
+    description: '',
+    picture: [],
+  },
+  dateFrom = dayjs(),
+  dateTo = dayjs(),
+  basePrice = '',
+} = point;
+return`<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">

@@ -1,5 +1,5 @@
-import {TYPES, TOWNS} from './../const.js';
-import {dateFormat, getRandomElementArr, getRandomInteger} from './../util.js';
+import {TYPES, TOWNS} from '../const.js';
+import {dateFormat, getRandomElementArr, getRandomInteger, createElement} from '../util.js';
 import dayjs from 'dayjs';
 
 const createPicturesTemp = (picturesArr) => picturesArr.map((picture) => ` <img class="event__photo" src="${picture.src}" alt="${picture.alt}">`).join('');
@@ -61,20 +61,23 @@ ${offers.map(({title, price}) => {
 </div></section>`
   : '';
 
-
-export const createEditPointTemplate = (point = {}) => {const {
-  type = getRandomElementArr(TYPES),
-  offers = [],
-  destination = {
+const BLANK_POINT = {
+  type: getRandomElementArr(TYPES),
+  offers: [],
+  destination: {
     town: getRandomElementArr(TOWNS),
     description: '',
     picture: [],
   },
-  dateFrom = dayjs(),
-  dateTo = dayjs(),
-  basePrice = '',
-} = point;
-return`<li class="trip-events__item">
+  dateFrom: dayjs(),
+  dateTo: dayjs(),
+  basePrice: '',
+};
+
+
+const createEditPointTemplate = (point) => {
+  const {type, dateFrom, dateTo, basePrice, offers, destination} = point;
+  return`<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
@@ -130,5 +133,27 @@ return`<li class="trip-events__item">
     </section>
   </form>
   </li>`;
-
 };
+
+export default class EditTripPoint {
+  constructor(point = BLANK_POINT) {
+    this._point = point;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return createEditPointTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

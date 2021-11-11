@@ -1,8 +1,13 @@
+export const POINT_COUNT = 20;
+
+export const DESCRIPTION_TEXT = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus';
+
 export const TYPES = [
   'taxi', 'bus', 'train', 'ship', 'transport', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant',
 ];
 
 export const TOWNS = ['Amsterdam', 'Geneva', 'Chamonix', 'Havana', 'New York'];
+
 
 export const OFFERS = [
   {
@@ -39,18 +44,22 @@ export const OFFERS = [
   },
 ];
 
+
 export const BasePrice = {
   MIN: 20,
   MAX: 1400,
 };
 
-export const GAP = {
+export const Gap = {
   MIN: 0,
   MAX: 5,
 };
 
-export const MIN_SENTECES = 0;
-export const MAX_SENTECES = 5;
+
+export const SentenceCount = {
+  MIN_SENTECES: 0,
+  MAX_SENTECES: 5,
+};
 
 
 export const Period = {
@@ -62,9 +71,9 @@ export const Period = {
   DATE_TO_MAX: 1500,
 };
 
-export const DESCRIPTION_TEXT = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras aliquet varius magna, non porta ligula feugiat eget. Fusce tristique felis at fermentum pharetra. Aliquam id orci ut lectus varius viverra. Nullam nunc ex, convallis sed finibus eget, sollicitudin eget ante. Phasellus eros mauris, condimentum sed nibh vitae, sodales efficitur ipsum. Sed blandit, eros vel aliquam faucibus, purus ex euismod diam, eu luctus nunc ante ut dui. Sed sed nisi sed augue convallis suscipit in sed felis. Aliquam erat volutpat. Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus';
 
 export const TimeFormat = {
-  MINUTE_PER_DAY: 1440,
-  MINUTE_PER_HOUR: 60,
+  MILLISECOND_IN_HOUR: 3600000,
+  MILLISECOND_IN_DAY: 86400000,
+  MILLISECOND_IN_MINUT: 60000,
 };

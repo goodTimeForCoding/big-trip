@@ -1,4 +1,4 @@
-import {converDataAfterCompare, dateFormat} from './../util.js';
+import {converDataAfterCompare, dateFormat, createElement} from '../util.js';
 
 const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, price}) =>
   `<li class="event__offer">
@@ -8,8 +8,8 @@ const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, p
    </li>`).join('')}`
   : '';
 
-export const createEventTemplate = (point) => {
-  const {type, basePrice, isFavorite, dateFrom, dateTo, offers} = point;
+const createEventTemplate = (point) => {
+  const {type, basePrice, isFavorite, dateFrom, dateTo, offers} = point;``
   const {town} =  point.destination;
   const buttonActive = (isFavorite === true)
     ? 'event__favorite-btn--active'
@@ -49,3 +49,27 @@ export const createEventTemplate = (point) => {
 </div>
 </li>`;
 };
+
+
+export default class TripPoint {
+  constructor(point) {
+    this._element = null;
+    this._point = point;
+  }
+
+  getTemplate() {
+    return createEventTemplate(this._point);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}

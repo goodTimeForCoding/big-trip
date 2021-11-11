@@ -1,15 +1,15 @@
 import dayjs from 'dayjs';
 import {getRandomElementArr, getRandomInteger, shuffleArray,  generateDescription}  from '../util.js';
-import {TYPES, TOWNS, OFFERS, BasePrice, GAP, Period, MAX_SENTECES, MIN_SENTECES} from '../const.js';
+import {TYPES, TOWNS, OFFERS, BasePrice, Gap, Period, SentenceCount} from '../const.js';
 
 /*offers*/
 //формируем объект с произвольными опциями
 const createOfferGenerator = (type) => {
-  const START_ELEMENT = 1;
-  const END_ELEMENT = getRandomInteger(1, 6);
+  const startElement = 1;
+  const endElment = getRandomInteger(1, 6);
   return {
     type,
-    offers: shuffleArray(OFFERS).slice(START_ELEMENT, END_ELEMENT),
+    offers: shuffleArray(OFFERS).slice(startElement, endElment),
   };
 };
 //формируем массив объектов с типом и соответствующим ему опциями
@@ -19,13 +19,13 @@ const generateRandomOffers = (types) => types.map((type) => createOfferGenerator
 //генерируем изображения
 const generatePicture = () => ({
   src: `img/photos/${  getRandomInteger(1, 5)  }.jpg`,
-  alt: generateDescription(1,1),
+  alt: generateDescription(),
 });
 //формируем объект с произвольным описанием
 const createDestinationGenerator = (town) => ({
-  description: generateDescription(MIN_SENTECES, MAX_SENTECES),
+  description: generateDescription(SentenceCount.MIN_SENTECES, SentenceCount.MAX_SENTECES),
   town,
-  picture: new Array(getRandomInteger(GAP.MIN, GAP.MAX)).fill(null).map(generatePicture),
+  picture: new Array(getRandomInteger(Gap.MIN, Gap.MAX)).fill(null).map(generatePicture),
 });
 //формируем описание для каждого города, и заносим в новый массив
 const generateRandomDescriptions = (towns) => towns.map((town) => createDestinationGenerator(town));

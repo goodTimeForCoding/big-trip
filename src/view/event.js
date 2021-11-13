@@ -1,4 +1,5 @@
-import {converDataAfterCompare, dateFormat, createElement} from '../util.js';
+import {converDataAfterCompare, dateFormat} from '.././utils/point.js';
+import AbstractView from './abstract.js';
 
 const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, price}) =>
   `<li class="event__offer">
@@ -9,7 +10,7 @@ const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, p
   : '';
 
 const createEventTemplate = (point) => {
-  const {type, basePrice, isFavorite, dateFrom, dateTo, offers} = point;``
+  const {type, basePrice, isFavorite, dateFrom, dateTo, offers} = point;'';
   const {town} =  point.destination;
   const buttonActive = (isFavorite === true)
     ? 'event__favorite-btn--active'
@@ -51,25 +52,36 @@ const createEventTemplate = (point) => {
 };
 
 
-export default class TripPoint {
+export default class TripPoint extends AbstractView {
   constructor(point) {
-    this._element = null;
+    super(); //вызываем родительский конструктор (в простых не вызываем так как конструктор не редактируем и он вызывается автоматически)
     this._point = point;
+    // 4. Теперь обработчик - метод класса, а не стрелочная функция.
+    // Поэтому при передаче в addEventListener он теряет контекст (this),
+    // а с контекстом - доступ к свойствам и методам.
+    // Чтобы такого не происходило, нужно насильно
+    // привязать обработчик к контексту с помощью bind
+    this._onRollupBtnClick = this._onRollupBtnClick.bind(this);
   }
 
   getTemplate() {
     return createEventTemplate(this._point);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _onRollupBtnClick() {
+    // 3. А внутри абстрактного обработчика вызовем колбэк
+    this._callback.rollupBtnClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setRollupBtnClickHandler(callback) {
+    // Мы могли бы сразу передать callback в addEventListener,
+    // но тогда бы для удаления обработчика в будущем,
+    // нам нужно было бы производить это снаружи, где-то там,
+    // где мы вызывали setClickHandler, что не всегда удобно
+
+    // 1. Поэтому колбэк мы запишем во внутреннее свойство
+    this._callback.rollupBtnClick = callback;
+    // 2. В addEventListener передадим абстрактный обработчик
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onRollupBtnClick);
   }
 }

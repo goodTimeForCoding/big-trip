@@ -1,6 +1,8 @@
 import {TYPES, TOWNS} from '../const.js';
-import {dateFormat, getRandomElementArr, getRandomInteger, createElement} from '../util.js';
+import {getRandomElementArr, getRandomInteger} from '.././utils/common.js';
+import {dateFormat} from '.././utils/point.js';
 import dayjs from 'dayjs';
+import AbstractView from './abstract.js';
 
 const createPicturesTemp = (picturesArr) => picturesArr.map((picture) => ` <img class="event__photo" src="${picture.src}" alt="${picture.alt}">`).join('');
 
@@ -135,25 +137,34 @@ const createEditPointTemplate = (point) => {
   </li>`;
 };
 
-export default class EditTripPoint {
+export default class EditTripPoint extends AbstractView {
   constructor(point = BLANK_POINT) {
+    super(); //вызываем родительский конструктор (в простых не выхываем так как конструктор не редактируем и он вызывается автоматически)
     this._point = point;
-    this._element = null;
+    this._OnPointEditSubmit = this._OnPointEditSubmit.bind(this);
+    this._OnRollupBtnClick = this._OnRollupBtnClick.bind(this);
   }
 
   getTemplate() {
     return createEditPointTemplate(this._point);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _OnRollupBtnClick() {
+    this._callback.rollupBtnClick();
   }
 
-  removeElement() {
-    this._element = null;
+  _OnPointEditSubmit(evt) {
+    evt.preventDefault();
+    this._callback.pointEditSubmit();
+  }
+
+  setRollupBtnClickHandler(callback) {
+    this._callback.rollupBtnClick = callback;
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._OnRollupBtnClick);
+  }
+
+  setSaveClickHandler(callback) {
+    this._callback.pointEditSubmit = callback;
+    this.getElement().querySelector('.event--edit').addEventListener('submit', this._OnPointEditSubmit);
   }
 }

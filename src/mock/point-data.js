@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
-import {getRandomElementArr, getRandomInteger, shuffleArray,  generateDescription}  from '../util.js';
+import {getRandomElementArr, getRandomInteger, shuffleArray}  from '../utils/common.js';
+import {generateDescription}  from '../utils/point.js';
 import {TYPES, TOWNS, OFFERS, BasePrice, Gap, Period, SentenceCount} from '../const.js';
 
 /*offers*/

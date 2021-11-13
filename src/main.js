@@ -5,7 +5,7 @@ import EventListWrapView from './view/events-list-wrap.js';
 import EditTripPointView from './view/point-editor.js';
 import TripPointView from './view/event.js';
 import NoPointView from './view/no-point.js';
-import {render, RenderPosition} from './util.js';
+import {render, RenderPosition, replace} from './utils/render.js';
 import {POINT_COUNT} from './const.js';
 import {generateWaypoint} from './mock/point-data.js';
 
@@ -26,12 +26,12 @@ const renderPoint = (pointListElement, pointData) => {
   const pointComponent = new TripPointView(pointData);
 
   const changeViewToPoint = () => {
-    //синтаксис .replaceChild(newChild, oldChild);
-    pointListElement.replaceChild(pointComponent.getElement(), pointEditorComponent.getElement());
+    //синтаксис: .replaceChild(newChild, oldChild);
+    replace(pointComponent, pointEditorComponent);
   };
 
   const changeViewToEdit = () => {
-    pointListElement.replaceChild(pointEditorComponent.getElement(), pointComponent.getElement());
+    replace(pointEditorComponent, pointComponent);
   };
 
   const onEscKeyDown = (evt) => {
@@ -42,23 +42,22 @@ const renderPoint = (pointListElement, pointData) => {
     }
   };
 
-  pointComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click', () => {
+  pointComponent.setRollupBtnClickHandler(() => {
     changeViewToEdit();
     document.addEventListener('keydown', onEscKeyDown);
   });
 
-  pointEditorComponent.getElement().querySelector('.event__rollup-btn').addEventListener('click',() => {
+  pointEditorComponent.setRollupBtnClickHandler(() => {
     changeViewToPoint();
     document.removeEventListener('keydown', onEscKeyDown);
   });
 
-  pointEditorComponent.getElement().querySelector('.event--edit').addEventListener('submit', (evt) => {
-    evt.preventDefault();
+  pointEditorComponent.setSaveClickHandler(() => {
     changeViewToPoint();
     document.removeEventListener('keydown', onEscKeyDown);
   });
 
-  render(pointListElement, pointComponent.getElement(),RenderPosition.BEFOREEND);
+  render(pointListElement, pointComponent,RenderPosition.BEFOREEND);
 };
 
 const renderBoard = (pointData) => {
@@ -66,18 +65,18 @@ const renderBoard = (pointData) => {
   const capComponent = new NoPointView();
 
   if(pointData.length === 0) {
-    render(tripEventsElement, capComponent.getElement(),RenderPosition.BEFOREEND);
+    render(tripEventsElement, capComponent,RenderPosition.BEFOREEND);
     return;
   }
-  render(tripEventsElement, new SortBarView().getElement(), RenderPosition.BEFOREEND);
+  render(tripEventsElement, new SortBarView(), RenderPosition.BEFOREEND);
   render(tripEventsElement, eventListWrapComponent.getElement(), RenderPosition.BEFOREEND);
   for (let i = 0; i < pointData.length; i++) {
     renderPoint(eventListWrapComponent.getElement(), pointData[i]);
   }
 };
 
-render(tripNavigationElement, new NavigationView().getElement(), RenderPosition.BEFOREEND);
+render(tripNavigationElement, new NavigationView(), RenderPosition.BEFOREEND);
 
-render(tripFilterControlElement, new FiltersView().getElement(), RenderPosition.BEFOREEND);
+render(tripFilterControlElement, new FiltersView(), RenderPosition.BEFOREEND);
 
 renderBoard(points);

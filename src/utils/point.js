@@ -3,6 +3,11 @@ import {DESCRIPTION_TEXT, TimeFormat} from '../const.js';
 import {getRandomInteger} from './common.js';
 export const dateFormat = (date, temp) => dayjs(date).format(temp);
 
+export const pickDescriptionElementDependOnValue = (value, elements) => elements.find((element) => element.town === value);
+
+export const pickOfferElementDependOnValue = (value, elements) => elements.find((element) => element.type === value).offers;
+
+
 //перевод времени в различные форматы
 export const converDataAfterCompare = (dateA,dateB) => {
   const timeTo = dateFormat(dateA,'YYYY-MM-DDTHH:mm');
@@ -32,4 +37,47 @@ export const generateDescription = (countMin = 1, countMax = 1) => {
     descriptionArr.push(arrayOfDescriptionText[randIndex]);
   }
   return descriptionArr.join('. ');
+};
+
+// Функция помещает поинты без значений в конце списка,
+// возвращая нужный вес для колбэка sort
+const getWeightForNull = (valueA, valueB) => {
+  //значение отсутствует
+  if (valueA === null && valueB === null) {
+    return 0;
+  }
+  //B первее A
+  if (valueA === null) {
+    return 1;
+  }
+  //A первее B
+  if (valueB === null) {
+    return -1;
+  }
+
+  return null;
+};
+
+
+export const sortPriceUp = (pointA, pointB) => {
+  const weight = getWeightForNull(pointA.basePrice, pointB.basePrice);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return dayjs(pointB.basePrice).diff(dayjs(pointA.basePrice));
+};
+
+
+export const sortTimeUp = (pointA, pointB) => {
+  const compareDatesPointA = dayjs(pointA.dateTo).diff(dayjs(pointA.dateFrom));
+  const compareDatesPointB = dayjs(pointB.dateTo).diff(dayjs(pointB.dateFrom));
+  const weight = getWeightForNull(compareDatesPointA, compareDatesPointB);
+
+  if (weight !== null) {
+    return weight;
+  }
+
+  return compareDatesPointB - compareDatesPointA;
 };

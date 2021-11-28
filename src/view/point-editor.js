@@ -1,8 +1,12 @@
 import {TYPES, TOWNS} from '../const.js';
 import {getRandomElementArr, getRandomInteger} from '.././utils/common.js';
-import {dateFormat} from '.././utils/point.js';
+import {dateFormat, pickDescriptionElementDependOnValue, pickOfferElementDependOnValue}from '.././utils/point.js';
+import {destinations, offers} from './../mock/point-data.js';
 import dayjs from 'dayjs';
-import AbstractView from './abstract.js';
+import SmartView from './smart.js';
+import flatpickr from 'flatpickr';
+import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+
 
 const createPicturesTemp = (picturesArr) => picturesArr.map((picture) => ` <img class="event__photo" src="${picture.src}" alt="${picture.alt}">`).join('');
 
@@ -77,8 +81,8 @@ const BLANK_POINT = {
 };
 
 
-const createEditPointTemplate = (point) => {
-  const {type, dateFrom, dateTo, basePrice, offers, destination} = point;
+const createEditPointTemplate = (data) => {
+  const {type, dateFrom, dateTo, basePrice, offers, destination} = data;
   return`<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
@@ -137,16 +141,86 @@ const createEditPointTemplate = (point) => {
   </li>`;
 };
 
-export default class EditTripPoint extends AbstractView {
+export default class EditTripPoint extends SmartView {
   constructor(point = BLANK_POINT) {
     super(); //вызываем родительский конструктор (в простых не выхываем так как конструктор не редактируем и он вызывается автоматически)
-    this._point = point;
+    this._pointState = EditTripPoint.parsePointToData(point);//храним состояние EditTripPoint
+    this._FromDatePicker = null;
+    this._ToDatePicker = null;
+
     this._OnPointEditSubmit = this._OnPointEditSubmit.bind(this);
     this._OnRollupBtnClick = this._OnRollupBtnClick.bind(this);
+    this._dateFromChangeHandler = this._dateFromChangeHandler.bind(this);
+    this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
+    this._onPointTypeChange = this._onPointTypeChange.bind(this);
+    this._onPointInput = this._onPointInput.bind(this);
+    this._setInnerListeners();//возвращаем обработчики
+    this._setFromDatePicker();
+    this._setToDatePicker();
+  }
+
+  reset(point) {
+    this.updateData(EditTripPoint.parsePointToData(point));
   }
 
   getTemplate() {
-    return createEditPointTemplate(this._point);
+    return createEditPointTemplate(this._pointState);
+  }
+
+  _setFromDatePicker() {
+    if (this._FromDatePicker) {
+      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
+      // которые создает flatpickr при инициализации
+      this._FromDatePicker.destroy();
+      this._FromDatePicker = null;
+    }
+    this._FromDatePicker = flatpickr(
+      this.getElement().querySelector('#event-start-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._pointState.dateFrom,
+        onChange: this._dateFromChangeHandler, // На событие flatpickr передаём наш колбэк
+      },
+    );
+  }
+
+  _dateFromChangeHandler(userDateFrom) {
+    if ((dayjs(this._pointState.dateFrom).diff(dayjs(userDateFrom))) < 0) {
+      this.updateData({
+        dateFrom: userDateFrom,
+        dateTo: userDateFrom,
+      });
+      return;
+    }
+    this.updateData({
+      dateFrom: userDateFrom,
+    });
+  }
+
+  _setToDatePicker() {
+    if (this._ToDatePicker) {
+      // В случае обновления компонента удаляем вспомогательные DOM-элементы,
+      // которые создает flatpickr при инициализации
+      this._ToDatePicker.destroy();
+      this._ToDatePicker = null;
+    }
+    this._ToDatePicker = flatpickr(
+      this.getElement().querySelector('#event-end-time-1'),
+      {
+        dateFormat: 'd/m/y H:i',
+        defaultDate: this._pointState.dateTo,
+        onChange: this._dateToChangeHandler, // На событие flatpickr передаём наш колбэк
+      },
+    );
+  }
+
+  _dateToChangeHandler(userDateTo) {
+    if ((dayjs(userDateTo).diff(dayjs(this._pointState.dateFrom))) < 0) {
+      userDateTo = this._pointState.dateFormat;
+    }
+    this.updateData({
+      dateTo: userDateTo,
+    });
   }
 
   _OnRollupBtnClick() {
@@ -155,7 +229,35 @@ export default class EditTripPoint extends AbstractView {
 
   _OnPointEditSubmit(evt) {
     evt.preventDefault();
-    this._callback.pointEditSubmit();
+    this._callback.pointEditSubmit(EditTripPoint.parseDataToPoint(this._pointState));//передаём состояние в виде данных презентеру
+  }
+
+  _onPointTypeChange(evt) {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    this.updateData({
+      type: evt.target.value,
+      offers: pickOfferElementDependOnValue(evt.target.value, offers),//получаем оффер ссответствующий выбранному типу
+    });
+  }
+
+
+  _onPointInput(evt) {
+    if (!TOWNS.includes(evt.target.value)) {
+      return;
+    }
+    evt.preventDefault();
+    this.updateData({
+      destination: pickDescriptionElementDependOnValue(evt.target.value, destinations),//получаем описание соответствующее выбранному городу
+    });
+  }
+
+  //оюработчики которые отвечают за выбор города и типа
+  _setInnerListeners () {
+    this.getElement().querySelector('.event__type-group').addEventListener('change',this._onPointTypeChange);
+    this.getElement().querySelector('.event__input--destination').addEventListener('change',this._onPointInput);
   }
 
   setRollupBtnClickHandler(callback) {
@@ -166,5 +268,30 @@ export default class EditTripPoint extends AbstractView {
   setSaveClickHandler(callback) {
     this._callback.pointEditSubmit = callback;
     this.getElement().querySelector('.event--edit').addEventListener('submit', this._OnPointEditSubmit);
+  }
+
+  //добавит обработчики
+  restoreHandlers () {
+    this._setInnerListeners();
+    this._setFromDatePicker();
+    this._setToDatePicker();
+    this.setRollupBtnClickHandler(this._callback.rollupBtnClick);
+    this.setSaveClickHandler(this._callback.pointEditSubmit);
+  }
+
+  //превращает данные в состояние
+  static parsePointToData(point) {
+    return Object.assign(
+      {},
+      point,
+    );
+  }
+
+  //превращает состояние в данные
+  static parseDataToPoint(data) {
+    return Object.assign(
+      {},
+      data,
+    );
   }
 }

@@ -1,4 +1,5 @@
 import dayjs from 'dayjs';
+import {nanoid} from 'nanoid';
 import {getRandomElementArr, getRandomInteger, shuffleArray}  from '../utils/common.js';
 import {generateDescription}  from '../utils/point.js';
 import {TYPES, TOWNS, OFFERS, BasePrice, Gap, Period, SentenceCount} from '../const.js';
@@ -47,13 +48,13 @@ const createDateGenerator = () => {
 };
 const dataGenerator = createDateGenerator();
 
-
+export const destinations = generateRandomDescriptions(TOWNS);
+export const offers = generateRandomOffers(TYPES);
 export const generateWaypoint = () => {
   const type = getRandomElementArr(TYPES);
-  const offers = generateRandomOffers(TYPES);
   const dateInterval = dataGenerator();
-  const destinations = generateRandomDescriptions(TOWNS);
   return {
+    id: nanoid(),
     type, //тип точки маршрута
     basePrice: getRandomInteger(BasePrice.MIN, BasePrice.MAX),
     isFavorite: Boolean(getRandomInteger()),

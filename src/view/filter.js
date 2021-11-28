@@ -1,4 +1,4 @@
-import AbstractView from './abstract.js';
+import SmartView from './smart.js';
 
 
 const createFiltersTemplate = () => `<form class="trip-filters" action="#" method="get">
@@ -21,7 +21,7 @@ const createFiltersTemplate = () => `<form class="trip-filters" action="#" metho
 </form>`;
 
 
-export default class SiteFilters extends AbstractView {
+export default class SiteFilters extends SmartView {
   getTemplate() {
     return createFiltersTemplate();
   }

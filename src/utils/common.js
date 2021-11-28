@@ -21,3 +21,33 @@ export const shuffleArray = (arr) => {
   }
   return arr;
 };
+
+//Функция для обновления моков(обновляет любой элемент массива)
+export const updateItem = (items, update) => {
+  const index = items.findIndex((item) => item.id === update.id);
+
+  if (index === -1) {
+    return items;
+  }
+
+  return [
+    ...items.slice(0, index),
+    update,
+    ...items.slice(index + 1),
+  ];
+};
+
+
+export const generateRandomArray = (array, minLength = 0, maxLength = array.length) => {
+  let temp;
+  let j;
+  for (let i = array.length - 1; i > 0; i--) {
+    j = getRandomInteger(0, i);
+    temp = array[j];
+    array[j] = array[i];
+    array[i] = temp;
+  }
+  array.length = getRandomInteger(minLength, maxLength);
+  return array;
+};
+

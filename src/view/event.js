@@ -1,5 +1,5 @@
 import {converDataAfterCompare, dateFormat} from '.././utils/point.js';
-import AbstractView from './abstract.js';
+import SmartView from './smart.js';
 
 const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, price}) =>
   `<li class="event__offer">
@@ -10,7 +10,7 @@ const createOfferTemp = (offers) => offers.length > 0 ? `${offers.map(({title, p
   : '';
 
 const createEventTemplate = (point) => {
-  const {type, basePrice, isFavorite, dateFrom, dateTo, offers} = point;'';
+  const {type, basePrice, isFavorite, dateFrom, dateTo, offers} = point;
   const {town} =  point.destination;
   const buttonActive = (isFavorite === true)
     ? 'event__favorite-btn--active'
@@ -52,7 +52,7 @@ const createEventTemplate = (point) => {
 };
 
 
-export default class TripPoint extends AbstractView {
+export default class TripPoint extends SmartView {
   constructor(point) {
     super(); //вызываем родительский конструктор (в простых не вызываем так как конструктор не редактируем и он вызывается автоматически)
     this._point = point;
@@ -62,6 +62,7 @@ export default class TripPoint extends AbstractView {
     // Чтобы такого не происходило, нужно насильно
     // привязать обработчик к контексту с помощью bind
     this._onRollupBtnClick = this._onRollupBtnClick.bind(this);
+    this._onFavoriteBtnClick = this._onFavoriteBtnClick.bind(this);
   }
 
   getTemplate() {
@@ -83,5 +84,15 @@ export default class TripPoint extends AbstractView {
     this._callback.rollupBtnClick = callback;
     // 2. В addEventListener передадим абстрактный обработчик
     this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onRollupBtnClick);
+  }
+
+  _onFavoriteBtnClick(evt) {
+    evt.preventDefault();
+    this._callback.favoriteClick();
+  }
+
+  setFavoriteClickHandler(callback) {
+    this._callback.favoriteClick = callback;
+    this.getElement().querySelector('.event__favorite-btn').addEventListener('click', this._onFavoriteBtnClick);
   }
 }

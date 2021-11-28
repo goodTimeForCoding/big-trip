@@ -77,3 +77,9 @@ export const TimeFormat = {
   MILLISECOND_IN_DAY: 86400000,
   MILLISECOND_IN_MINUT: 60000,
 };
+
+export const SortType = {
+  DAY: 'day',
+  TIME: 'time',
+  PRICE: 'price',
+};

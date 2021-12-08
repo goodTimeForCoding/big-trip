@@ -61,7 +61,7 @@ export default class TripPoint extends SmartView {
     // а с контекстом - доступ к свойствам и методам.
     // Чтобы такого не происходило, нужно насильно
     // привязать обработчик к контексту с помощью bind
-    this._onRollupBtnClick = this._onRollupBtnClick.bind(this);
+    this._onRolldownBtnClick = this._onRolldownBtnClick.bind(this);
     this._onFavoriteBtnClick = this._onFavoriteBtnClick.bind(this);
   }
 
@@ -69,21 +69,21 @@ export default class TripPoint extends SmartView {
     return createEventTemplate(this._point);
   }
 
-  _onRollupBtnClick() {
+  _onRolldownBtnClick() {
     // 3. А внутри абстрактного обработчика вызовем колбэк
-    this._callback.rollupBtnClick();
+    this._callback.rolldownBtnClick();
   }
 
-  setRollupBtnClickHandler(callback) {
+  setRolldownBtnClickHandler(callback) {
     // Мы могли бы сразу передать callback в addEventListener,
     // но тогда бы для удаления обработчика в будущем,
     // нам нужно было бы производить это снаружи, где-то там,
     // где мы вызывали setClickHandler, что не всегда удобно
 
     // 1. Поэтому колбэк мы запишем во внутреннее свойство
-    this._callback.rollupBtnClick = callback;
+    this._callback.rolldownBtnClick = callback;
     // 2. В addEventListener передадим абстрактный обработчик
-    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onRollupBtnClick);
+    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._onRolldownBtnClick);
   }
 
   _onFavoriteBtnClick(evt) {

@@ -1,7 +1,8 @@
 import dayjs from 'dayjs';
+import { allTypeOffers } from './../main.js';
 import {nanoid} from 'nanoid';
 import {getRandomElementArr, getRandomInteger, shuffleArray}  from '../utils/common.js';
-import {generateDescription}  from '../utils/point.js';
+import {generateDescription, pickOfferElementDependOnValue}  from '../utils/point.js';
 import {TYPES, TOWNS, OFFERS, BasePrice, Gap, Period, SentenceCount} from '../const.js';
 
 /*offers*/
@@ -15,7 +16,7 @@ const createOfferGenerator = (type) => {
   };
 };
 //формируем массив объектов с типом и соответствующим ему опциями
-const generateRandomOffers = (types) => types.map((type) => createOfferGenerator(type));
+export const generateRandomOffers = () => TYPES.map((type) => createOfferGenerator(type));
 
 /*destination*/
 //генерируем изображения
@@ -49,7 +50,6 @@ const createDateGenerator = () => {
 const dataGenerator = createDateGenerator();
 
 export const destinations = generateRandomDescriptions(TOWNS);
-export const offers = generateRandomOffers(TYPES);
 export const generateWaypoint = () => {
   const type = getRandomElementArr(TYPES);
   const dateInterval = dataGenerator();
@@ -60,7 +60,7 @@ export const generateWaypoint = () => {
     isFavorite: Boolean(getRandomInteger()),
     dateFrom: dateInterval.dateFrom,
     dateTo: dateInterval.dateTo,
-    offers: offers.find((item) => item.type === type).offers,//находим доп опции(offers) соответствующее текущему сформированному типу точки маршрута(type)
+    offers: pickOfferElementDependOnValue(type, allTypeOffers),
     destination: destinations[getRandomInteger(0,TOWNS.length-1)],
   };
 };

@@ -81,3 +81,22 @@ export const sortTimeUp = (pointA, pointB) => {
 
   return compareDatesPointB - compareDatesPointA;
 };
+
+export const sortDateUp = (pointA, pointB) => {
+  const startDatePointA = pointA.dateFrom;
+  const startDatePointB = pointB.dateFrom;
+
+  const sortWeightForEmptyValue = getWeightForNull(startDatePointA, startDatePointB);
+
+  if (sortWeightForEmptyValue !== null) {
+    return sortWeightForEmptyValue;
+  }
+
+  return dayjs(startDatePointA).diff(startDatePointB);
+};
+
+export const isDateTheSame = (dateA, dateB) => (dateA === null && dateB === null) ? true : dayjs(dateA).isSame(dateB, 'm');
+export const isDateExpired = (date) => dayjs().isAfter(date, 'm');
+export const isDateInFuture = (date) => dayjs().isBefore(date, 'm');
+export const isDateCurrent = (date) => dayjs().isSame(date, 'm');
+export const isEventContinues = (dateFrom, dateTo) => isDateExpired(dateFrom) && isDateInFuture(dateTo);

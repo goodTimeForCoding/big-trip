@@ -1,12 +1,30 @@
-import {TYPES, TOWNS} from '../const.js';
-import {getRandomElementArr, getRandomInteger} from '.././utils/common.js';
-import {dateFormat, pickDescriptionElementDependOnValue, pickOfferElementDependOnValue}from '.././utils/point.js';
-import {destinations, offers} from './../mock/point-data.js';
-import dayjs from 'dayjs';
 import SmartView from './smart.js';
 import flatpickr from 'flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
+import { TYPES, TOWNS, Index, TRUE_FLAG} from '../const.js';
+import { getRandomElementArr } from '.././utils/common.js';
+import { dateFormat, pickDescriptionElementDependOnValue, pickOfferElementDependOnValue } from '.././utils/point.js';
+import { destinations } from './../mock/point-data.js';
+import dayjs from 'dayjs';
 
+
+const ValidityMessage = {
+  DESTINATION: 'Выберите направление',
+  PRICE: 'Введите стоимость',
+};
+
+const BLANK_POINT = {
+  type: getRandomElementArr(TYPES),
+  offers: [],
+  destination: {
+    town: getRandomElementArr(TOWNS),
+    description: '',
+    picture: [],
+  },
+  dateFrom: dayjs().toDate(),
+  dateTo: dayjs().toDate(),
+  basePrice: '',
+};
 
 const createPicturesTemp = (picturesArr) => picturesArr.map((picture) => ` <img class="event__photo" src="${picture.src}" alt="${picture.alt}">`).join('');
 
@@ -46,44 +64,34 @@ const createEventTypeItemTemplate = (availableTypes) => availableTypes.map((type
     <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type}</label>
     </div>`).join('');
 
-const createTownsTemplate = (cities) => cities.map((city) => `<option value="${city}">`).join('');
+const createTownsTemplate = (TOWNS) => TOWNS.map((city) => `<option value="${city}">`).join('');
 
 
-const createOfferTemp = (offers) => offers.length > 0 ?
-  `<section class="event__section  event__section--offers">
-<h3 class="event__section-title  event__section-title--offers">Offers</h3> <div class="event__available-offers">
-${offers.map(({title, price}) => {
+const createOfferTemp = (type, offers, allTypeOffers) => {
+  const availableOffers = allTypeOffers.find((item) => item.type === type).offers;
+  return `<section class="event__section  event__section--offers">
+  ${availableOffers.length > 0 ?
+    `<h3 class="event__section-title  event__section-title--offers"> Offers</h3> <div class="event__available-offers">
+${availableOffers.map(({ title, price }) => {
     const offerClassName = title.split(' ').pop();
-    const checkedAttribute = getRandomInteger() ? 'checked' : '';
+    const checkedAttribute = offers.some((offer) => offer.title === title) ? 'checked' : '';
     return `<div class="event__offer-selector">
-  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerClassName}-1" type="checkbox" name="event-offer-${offerClassName}" ${checkedAttribute}>
+  <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offerClassName}-1" type="checkbox" name="event-offer-${offerClassName}" value="${title}" ${checkedAttribute}>
   <label class="event__offer-label" for="event-offer-${offerClassName}-1">
-    <span class="event__offer-title">${title}</span>
-    &plus;&euro;&nbsp;
-    <span class="event__offer-price">${price}</span>
+  <span class="event__offer-title">${title}</span>
+  &plus;&euro;&nbsp;
+  <span class="event__offer-price">${price}</span>
   </label>
-</div>`;
+  </div>`;
   }).join('')}
-</div></section>`
-  : '';
-
-const BLANK_POINT = {
-  type: getRandomElementArr(TYPES),
-  offers: [],
-  destination: {
-    town: getRandomElementArr(TOWNS),
-    description: '',
-    picture: [],
-  },
-  dateFrom: dayjs(),
-  dateTo: dayjs(),
-  basePrice: '',
+  </div>` : ''}
+  </section>`;
 };
 
 
-const createEditPointTemplate = (data) => {
-  const {type, dateFrom, dateTo, basePrice, offers, destination} = data;
-  return`<li class="trip-events__item">
+const createEditPointTemplate = (data, allTypeOffers, pointMode) => {
+  const { type, dateFrom, dateTo, basePrice, offers, destination } = data;
+  return `<li class="trip-events__item">
   <form class="event event--edit" action="#" method="post">
     <header class="event__header">
       <div class="event__type-wrapper">
@@ -113,10 +121,10 @@ const createEditPointTemplate = (data) => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-1">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFormat(dateFrom,'DD/MM/YY HH:mm')}">
+        <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dateFormat(dateFrom, 'DD/MM/YY HH:mm')}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-1">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateFormat(dateTo,'DD/MM/YY HH:mm')}">
+        <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dateFormat(dateTo, 'DD/MM/YY HH:mm')}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -128,13 +136,13 @@ const createEditPointTemplate = (data) => {
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">Delete</button>
-      <button class="event__rollup-btn" type="button">
+        <button class="event__reset-btn" type="reset">${pointMode ? 'Delete' : 'Cancel'}</button>
+        ${pointMode ? `<button class="event__rollup-btn" type="button">
         <span class="visually-hidden">Open event</span>
-      </button>
-    </header>
-    <section class="event__details">
-      ${createOfferTemp(offers)}
+        </button>` : ''}
+      </header>
+      <section class="event__details">
+      ${createOfferTemp(type, offers, allTypeOffers)}
       ${createDestinationTemp(destination)}
     </section>
   </form>
@@ -142,9 +150,12 @@ const createEditPointTemplate = (data) => {
 };
 
 export default class EditTripPoint extends SmartView {
-  constructor(point = BLANK_POINT) {
+  constructor(offers, point = BLANK_POINT, pointMode) {
     super(); //вызываем родительский конструктор (в простых не выхываем так как конструктор не редактируем и он вызывается автоматически)
     this._pointState = EditTripPoint.parsePointToData(point);//храним состояние EditTripPoint
+    this._pointMode = pointMode;
+    this._offers = offers;
+
     this._FromDatePicker = null;
     this._ToDatePicker = null;
 
@@ -154,6 +165,10 @@ export default class EditTripPoint extends SmartView {
     this._dateToChangeHandler = this._dateToChangeHandler.bind(this);
     this._onPointTypeChange = this._onPointTypeChange.bind(this);
     this._onPointInput = this._onPointInput.bind(this);
+    this._onPointDelete = this._onPointDelete.bind(this);
+    this._onPriceChange = this._onPriceChange.bind(this);
+    this._onOfferChange = this._onOfferChange.bind(this);
+
     this._setInnerListeners();//возвращаем обработчики
     this._setFromDatePicker();
     this._setToDatePicker();
@@ -163,9 +178,20 @@ export default class EditTripPoint extends SmartView {
     this.updateData(EditTripPoint.parsePointToData(point));
   }
 
-  getTemplate() {
-    return createEditPointTemplate(this._pointState);
+  removeElement() {
+    super.removeElement();
+    if (this._FromDatePicker || this._ToDatePicker) {
+      this._FromDatePicker.destroy();
+      this._FromDatePicker = null;
+      this._ToDatePicker.destroy();
+      this._ToDatePicker = null;
+    }
   }
+
+  getTemplate() {
+    return createEditPointTemplate(this._pointState, this._offers, this._pointMode);
+  }
+
 
   _setFromDatePicker() {
     if (this._FromDatePicker) {
@@ -216,7 +242,7 @@ export default class EditTripPoint extends SmartView {
 
   _dateToChangeHandler(userDateTo) {
     if ((dayjs(userDateTo).diff(dayjs(this._pointState.dateFrom))) < 0) {
-      userDateTo = this._pointState.dateFormat;
+      userDateTo = this._pointState.dateFrom;
     }
     this.updateData({
       dateTo: userDateTo,
@@ -239,25 +265,35 @@ export default class EditTripPoint extends SmartView {
     }
     this.updateData({
       type: evt.target.value,
-      offers: pickOfferElementDependOnValue(evt.target.value, offers),//получаем оффер ссответствующий выбранному типу
+      offers: [],
     });
   }
 
 
   _onPointInput(evt) {
     if (!TOWNS.includes(evt.target.value)) {
-      return;
+      evt.target.setCustomValidity(`${ValidityMessage.DESTINATION}: ${TOWNS.join(', ')}`);
+    } else {
+      evt.target.setCustomValidity('');
+      evt.preventDefault();
+      this.updateData({
+        destination: pickDescriptionElementDependOnValue(evt.target.value, destinations),//получаем описание соответствующее выбранному городу
+      });
     }
-    evt.preventDefault();
-    this.updateData({
-      destination: pickDescriptionElementDependOnValue(evt.target.value, destinations),//получаем описание соответствующее выбранному городу
-    });
+    evt.target.reportValidity();
   }
 
-  //оюработчики которые отвечают за выбор города и типа
-  _setInnerListeners () {
-    this.getElement().querySelector('.event__type-group').addEventListener('change',this._onPointTypeChange);
-    this.getElement().querySelector('.event__input--destination').addEventListener('change',this._onPointInput);
+  _onPointDelete(evt) {
+    evt.preventDefault();
+    this._callback.deleteClick(EditTripPoint.parseDataToPoint(this._pointState));
+  }
+
+  //обработчики которые отвечают за выбор города и типа
+  _setInnerListeners() {
+    this.getElement().querySelector('.event__type-group').addEventListener('change', this._onPointTypeChange);
+    this.getElement().querySelector('.event__input--destination').addEventListener('change', this._onPointInput);
+    this.getElement().querySelector('.event__input--price').addEventListener('change', this._onPriceChange);
+    this.getElement().querySelector('.event__section--offers').addEventListener('change', this._onOfferChange);
   }
 
   setRollupBtnClickHandler(callback) {
@@ -270,13 +306,19 @@ export default class EditTripPoint extends SmartView {
     this.getElement().querySelector('.event--edit').addEventListener('submit', this._OnPointEditSubmit);
   }
 
+  setDeleteClickHandler(callback) {
+    this._callback.deleteClick = callback;
+    this.getElement().querySelector('.event__reset-btn').addEventListener('click', this._onPointDelete);
+  }
+
   //добавит обработчики
-  restoreHandlers () {
+  restoreHandlers() {
     this._setInnerListeners();
     this._setFromDatePicker();
     this._setToDatePicker();
     this.setRollupBtnClickHandler(this._callback.rollupBtnClick);
     this.setSaveClickHandler(this._callback.pointEditSubmit);
+    this.setDeleteClickHandler(this._callback.deleteClick);
   }
 
   //превращает данные в состояние
@@ -293,5 +335,45 @@ export default class EditTripPoint extends SmartView {
       {},
       data,
     );
+  }
+
+  _onPriceChange(evt) {
+    evt.preventDefault();
+    if (!/^\d+$/.test(evt.target.value) || evt.target.value < Index.NEXT) {
+      evt.target.setCustomValidity(ValidityMessage.PRICE);
+    } else {
+      evt.target.setCustomValidity('');
+      this.updateData({
+        basePrice: parseInt(evt.target.value),
+      },
+      TRUE_FLAG,
+      );
+    }
+    evt.target.reportValidity();
+  }
+
+
+  _onOfferChange(evt) {
+    evt.preventDefault();
+    if (evt.target.tagName !== 'INPUT') {
+      return;
+    }
+    const selectedOffer = evt.target.value;
+    const index = this._pointState.offers.findIndex((offer) => offer.title === selectedOffer);
+    if (index < 0) {
+      const availableOffers = pickOfferElementDependOnValue(this._pointState.type, this._offers);
+      const newOffer = availableOffers.find((offer) => offer.title === selectedOffer);
+      this.updateData({
+        offers: [newOffer, ...this._pointState.offers],
+      },
+      TRUE_FLAG,
+      );
+    } else {
+      this.updateData({
+        offers: [...this._pointState.offers.slice(0, index), ...this._pointState.offers.slice(index + Index.NEXT)],
+      },
+      TRUE_FLAG,
+      );
+    }
   }
 }

@@ -13,10 +13,9 @@ export default class Smart extends Abstract {
 
     const newElement = this.getElement();
     parentElement.replaceChild(newElement, previousElement);
-    this.restoreHandlers();//добавляем обработчики перерисованному DOM элементу
   }
 
-  updateData(update) {
+  updateData(update, justStateUpdate) {
     if (!update) {
       return;
     }
@@ -25,7 +24,11 @@ export default class Smart extends Abstract {
       this._pointState,
       update,
     );
+    if (justStateUpdate) {
+      return;
+    }
     this.updateElement();
+    this.restoreHandlers();
   }
 
   restoreListeners() {

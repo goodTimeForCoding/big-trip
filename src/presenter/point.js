@@ -1,6 +1,8 @@
 import EditTripPointView from '../view/point-editor.js';
 import TripPointView from '../view/event.js';
-import {render, RenderPosition, replace, remove} from '../utils/render.js';
+import { render, RenderPosition, replace, remove } from '../utils/render.js';
+import { UserAction, UpdateType } from '../const.js';
+import { isDateTheSame, pickOfferElementDependOnValue } from '../utils/point.js';
 
 
 const Mode = { //ключ определяющий состояние поинтов
@@ -9,19 +11,22 @@ const Mode = { //ключ определяющий состояние поинт
 };
 
 export default class Point {
-  constructor(pointListWrap, changeData, changeMode) {//параметры получаем извне, то есть при создании класса
+  constructor(pointListWrap, changeData, changeMode, offers) {//параметры получаем извне, то есть при создании класса
     this._pointListWrap = pointListWrap;
     this._changeData = changeData;
     this._changeMode = changeMode;
+    this._offers = offers;
 
     this._pointComponent = null;
     this._pointEditorComponent = null;
     this._mode = Mode.DEFAULT;//по умолчанию в режиме просто точка маршрута
 
-    this._rollupBtnClickHandler = this._rollupBtnClickHandler.bind(this);
+    this._rolldownBtnClickHandler = this._rolldownBtnClickHandler.bind(this);
     this._saveClickHandler = this._saveClickHandler.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);
     this._handleFavoriteClick = this._handleFavoriteClick.bind(this);
+    this._rollupBtnClickHandler = this._rollupBtnClickHandler.bind(this);
+    this._deleteClickHandler = this._deleteClickHandler.bind(this);
   }
 
   init(point) {
@@ -32,20 +37,22 @@ export default class Point {
     const previousPointEditorComponent = this._pointEditorComponent;
 
     this._pointComponent = new TripPointView(point);
-    this._pointEditorComponent = new EditTripPointView(point);
+    this._pointEditorComponent = new EditTripPointView(this._offers, point, 'edit_mode');
 
-    this._pointComponent.setRollupBtnClickHandler(this._rollupBtnClickHandler);
-    this._pointEditorComponent.setRollupBtnClickHandler(this._saveClickHandler);
-    this._pointEditorComponent.setSaveClickHandler(this._saveClickHandler);
+    this._pointComponent.setRolldownBtnClickHandler(this._rolldownBtnClickHandler);
     this._pointComponent.setFavoriteClickHandler(this._handleFavoriteClick);
+    this._pointEditorComponent.setRollupBtnClickHandler(this._rollupBtnClickHandler);
+    this._pointEditorComponent.setSaveClickHandler(this._saveClickHandler);
+    this._pointEditorComponent.setDeleteClickHandler(this._deleteClickHandler);
+
 
     if (previousPointComponent === null || previousPointEditorComponent === null) {
-      render(this._pointListWrap,  this._pointComponent, RenderPosition.BEFOREEND);
+      render(this._pointListWrap, this._pointComponent, RenderPosition.BEFOREEND);
       return;
     }
     // Проверка на наличие в DOM необходима,
     // чтобы не пытаться заменить то, что не было отрисовано
-    if (this._mode === Mode.DEFAULT)  {
+    if (this._mode === Mode.DEFAULT) {
       replace(this._pointComponent, previousPointComponent); //предыдущий компонент меняется на новый
     }
 
@@ -56,6 +63,10 @@ export default class Point {
     //предыдущие компоненты удаляются
     remove(previousPointComponent);
     remove(previousPointEditorComponent);
+  }
+
+  getOffers(point, offers) {
+    pickOfferElementDependOnValue(point, offers);
   }
 
   //метод по удалению компоненты
@@ -92,19 +103,35 @@ export default class Point {
     }
   }
 
-  _rollupBtnClickHandler() {
+  _rolldownBtnClickHandler() {
     this._changeViewToEdit();
     this._pointEditorComponent.reset(this._point);
   }
 
+  //колбэк (ф-ция обработчик события)
   _saveClickHandler(point) {
     this._changeViewToPoint();
-    this._changeData(point);
+
+    const isMinorUpdate = (!isDateTheSame(this._point.dateFrom, point.dateFrom) ||
+      !isDateTheSame(this._point.dateTo, point.dateTo) ||
+      !(this._point.basePrice === point.basePrice));
+
+    this._changeData(
+      UserAction.UPDATE_POINT,
+      isMinorUpdate ? UpdateType.MINOR : UpdateType.PATCH,
+      point,
+    );
   }
 
-  //метод на каждый клик по Favorite создаёт новый объект, в которую копируем все поля объекта поинт кроме isFavorite, для неё отдельная логика
+  _rollupBtnClickHandler() {
+    this._changeViewToPoint();
+  }
+
+  //метод на каждый клик по Favorite создаёт новый объект, в которую копируем все поля объекта поинт кроме isFavorite, для неё отдельная логика(ф-ция обработчик события)
   _handleFavoriteClick() {
     this._changeData(
+      UserAction.UPDATE_POINT,
+      UpdateType.MINOR,
       Object.assign(
         {},
         this._point,
@@ -112,6 +139,14 @@ export default class Point {
           isFavorite: !this._point.isFavorite,//меняем на true или false при клике
         },
       ),
+    );
+  }
+
+  _deleteClickHandler(point) {
+    this._changeData(
+      UserAction.DELETE_POINT,
+      UpdateType.MINOR,
+      point,
     );
   }
 }

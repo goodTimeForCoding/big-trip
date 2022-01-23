@@ -11,7 +11,7 @@ export default class PointNew {
 
 
     this._pointEditorComponent = null;
-    this._resumeNewButton = null
+    this._resumeNewButton = null;
 
     this._saveClickHandler = this._saveClickHandler.bind(this);
     this._escKeyDownHandler = this._escKeyDownHandler.bind(this);

@@ -4,10 +4,8 @@ import { MenuItem, Tag } from './../const.js';
 const DISABLED_STATUS = 'disabled';
 
 
-const createButtonNewTemplate = () => {
-  return `<button class="trip-main__event-add-btn  btn  btn--big  btn--yellow"
+const createButtonNewTemplate = () => `<button class="trip-main__event-add-btn  btn  btn--big  btn--yellow"
   type="button" data-menu-item="${MenuItem.NEW_EVENT}">New event</button>`;
-};
 
 
 export default class ButtonNew extends AbstractView {
@@ -46,5 +44,3 @@ export default class ButtonNew extends AbstractView {
     this._callback.buttonNewClick(evt.target.dataset.menuItem);
   }
 }
-
-

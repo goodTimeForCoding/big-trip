@@ -5,9 +5,8 @@ import PointNewPresenter from './point-new.js';
 import { render, RenderPosition, remove } from '../utils/render.js';
 import PointPresenter from './point.js';
 import { sortPriceUp, sortTimeUp, sortDateUp } from '../utils/point.js';
-import { SortType, UpdateType, UserAction, FilterType, TRUE_FLAG, FlagMode } from '../const.js';
+import { SortType, UpdateType, UserAction, FlagMode } from '../const.js';
 import { filter } from './../utils/filter.js';
-let resetSortType = false;
 
 export default class Trip {
   constructor(tripContainer, pointsModel, filterModel, offersModel) {
@@ -71,7 +70,6 @@ export default class Trip {
 
   //обработка действий на представлении, колбэк которая отдаётся вьюшкам
   _handleViewAction(actionType, updateType, update) {
-    console.log(actionType, updateType, update);
     // actionType - действие пользователя, нужно чтобы понять, какой метод модели вызвать
     // updateType - тип изменений, нужно чтобы понять, что после нужно обновить, не нужен модели, получаем его из вьюшки, затем прогоняем через модель
     // update - обновленные данные
@@ -92,7 +90,6 @@ export default class Trip {
 
   //колбэк передаём в модель, данный колбек требует наблюдатель, модель будет дёргать именно его, когда нужно будет ей уведомить презентер о том, что что-то поменялось
   _handleModelEvent(updateType, data) {
-    console.log(updateType, data);
     switch (updateType) {
       case UpdateType.PATCH:
         //обновит часть списка(например когда поменялось описание)

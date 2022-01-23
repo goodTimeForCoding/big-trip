@@ -29,7 +29,6 @@ offersModel.setOffers(randomOffersData);
 export const allTypeOffers = offersModel.getOffers();
 
 const points = new Array(POINT_COUNT).fill().map(generateWaypoint);
-console.log(points);
 
 const pointsModel = new PointsModel();
 pointsModel.setPoints(points);//записываем в модель данные

@@ -38,12 +38,10 @@ export const getSortedData = (points, uniqueTypes, chartMode) => {
   }
   const sortedData = Object.entries(data).slice().sort(sortByDecreasing);
 
-  const transferToObject = (previousObject, [type, value]) => {
-    return Object.assign(
-      previousObject,
-      previousObject.types.push(type.toUpperCase()),
-      previousObject.values.push(value),
-    );
-  };
+  const transferToObject = (previousObject, [type, value]) => Object.assign(
+    previousObject,
+    previousObject.types.push(type.toUpperCase()),
+    previousObject.values.push(value),
+  );
   return sortedData.reduce(transferToObject, { types: [], values: [] });
 };

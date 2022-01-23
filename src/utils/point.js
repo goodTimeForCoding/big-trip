@@ -7,26 +7,21 @@ import {getRandomInteger} from './common.js';
 export const dateFormat = (date, temp) => dayjs(date).format(temp);
 dayjs.extend(duration);
 
-const DAYS_COUNT = 10;
-
 export const pickDescriptionElementDependOnValue = (value, elements) => elements.find((element) => element.town === value);
 
 export const pickOfferElementDependOnValue = (value, elements) => elements.find((element) => element.type === value).offers;
 
-
-
 export const converDataAfterCompare = (dateA,dateB) => {
   const timeTo = dateFormat(dateA,'YYYY-MM-DDTHH:mm');
   const timeFrom = dateFormat(dateB,'YYYY-MM-DDTHH:mm');
-  const compareTwoDates = dayjs(timeTo).diff(dayjs(timeFrom));
+  const compareDates = dayjs(timeTo).diff(dayjs(timeFrom));
+  const days = Math.floor(compareDates / TimeFormat.MILLISECOND_IN_DAY);
+  const hours = Math.floor((compareDates - days * TimeFormat.MILLISECOND_IN_DAY)/ TimeFormat.MILLISECOND_IN_HOUR);
+  const minutes = Math.round((compareDates - days * TimeFormat.MILLISECOND_IN_DAY - hours * TimeFormat.MILLISECOND_IN_HOUR)/ TimeFormat.MILLISECOND_IN_MINUT);
 
-  const days = Math.floor(compareTwoDates / TimeFormat.MILLISECOND_IN_DAY);
-  const hours = Math.floor((compareTwoDates - days * TimeFormat.MILLISECOND_IN_DAY)/ TimeFormat.MILLISECOND_IN_HOUR);
-  const minutes = Math.round((compareTwoDates - days * TimeFormat.MILLISECOND_IN_DAY - hours * TimeFormat.MILLISECOND_IN_HOUR)/ TimeFormat.MILLISECOND_IN_MINUT);
-
-  if (compareTwoDates < TimeFormat.MILLISECOND_IN_HOUR){
+  if (compareDates < TimeFormat.MILLISECOND_IN_HOUR){
     return `${minutes}M`;
-  } else if (compareTwoDates > TimeFormat.MILLISECOND_IN_HOUR && compareTwoDates < TimeFormat.MILLISECOND_IN_DAY) {
+  } else if (compareDates > TimeFormat.MILLISECOND_IN_HOUR && compareDates < TimeFormat.MILLISECOND_IN_DAY) {
     return `${hours}H ${minutes}M`;
   }
   return `${days}D ${hours}H ${minutes}M`;
@@ -121,16 +116,15 @@ export const compareTwoDates = (dateA, dateB) => {
   return dayjs(dateA).diff(dateB);
 };
 
-export const humanizeDateDuration = (compareTwoDates) => {
-  const days = Math.floor(compareTwoDates / TimeFormat.MILLISECOND_IN_DAY);
-  const hours = Math.floor((compareTwoDates - days * TimeFormat.MILLISECOND_IN_DAY)/ TimeFormat.MILLISECOND_IN_HOUR);
-  const minutes = Math.round((compareTwoDates - days * TimeFormat.MILLISECOND_IN_DAY - hours * TimeFormat.MILLISECOND_IN_HOUR)/ TimeFormat.MILLISECOND_IN_MINUT);
+export const humanizeDateDuration = (compareDates) => {
+  const days = Math.floor(compareDates / TimeFormat.MILLISECOND_IN_DAY);
+  const hours = Math.floor((compareDates - days * TimeFormat.MILLISECOND_IN_DAY)/ TimeFormat.MILLISECOND_IN_HOUR);
+  const minutes = Math.round((compareDates - days * TimeFormat.MILLISECOND_IN_DAY - hours * TimeFormat.MILLISECOND_IN_HOUR)/ TimeFormat.MILLISECOND_IN_MINUT);
 
-  if (compareTwoDates < TimeFormat.MILLISECOND_IN_HOUR){
+  if (compareDates < TimeFormat.MILLISECOND_IN_HOUR){
     return `${minutes}M`;
-  } else if (compareTwoDates > TimeFormat.MILLISECOND_IN_HOUR && compareTwoDates < TimeFormat.MILLISECOND_IN_DAY) {
+  } else if (compareDates > TimeFormat.MILLISECOND_IN_HOUR && compareDates < TimeFormat.MILLISECOND_IN_DAY) {
     return `${hours}H ${minutes}M`;
   }
   return `${days}D ${hours}H ${minutes}M`;
 };
-

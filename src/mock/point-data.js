@@ -3,7 +3,7 @@ import { allTypeOffers } from './../main.js';
 import {nanoid} from 'nanoid';
 import {getRandomElementArr, getRandomInteger, shuffleArray}  from '../utils/common.js';
 import {generateDescription, pickOfferElementDependOnValue}  from '../utils/point.js';
-import {TYPES, TOWNS, OFFERS, BasePrice, Gap, Period, SentenceCount} from '../const.js';
+import {types, towns, offers, BasePrice, Gap, Period, SentenceCount} from '../const.js';
 
 /*offers*/
 //формируем объект с произвольными опциями
@@ -12,11 +12,11 @@ const createOfferGenerator = (type) => {
   const endElment = getRandomInteger(1, 6);
   return {
     type,
-    offers: shuffleArray(OFFERS).slice(startElement, endElment),
+    offers: shuffleArray(offers).slice(startElement, endElment),
   };
 };
 //формируем массив объектов с типом и соответствующим ему опциями
-export const generateRandomOffers = () => TYPES.map((type) => createOfferGenerator(type));
+export const generateRandomOffers = () => types.map((type) => createOfferGenerator(type));
 
 /*destination*/
 //генерируем изображения
@@ -31,7 +31,7 @@ const createDestinationGenerator = (town) => ({
   picture: new Array(getRandomInteger(Gap.MIN, Gap.MAX)).fill(null).map(generatePicture),
 });
 //формируем описание для каждого города, и заносим в новый массив
-const generateRandomDescriptions = (towns) => towns.map((town) => createDestinationGenerator(town));
+const generateRandomDescriptions = (items) => items.map((town) => createDestinationGenerator(town));
 
 
 /*Формируем дату начала и окончания маршрута*/
@@ -49,9 +49,9 @@ const createDateGenerator = () => {
 };
 const dataGenerator = createDateGenerator();
 
-export const destinations = generateRandomDescriptions(TOWNS);
+export const destinations = generateRandomDescriptions(towns);
 export const generateWaypoint = () => {
-  const type = getRandomElementArr(TYPES);
+  const type = getRandomElementArr(types);
   const dateInterval = dataGenerator();
   return {
     id: nanoid(),
@@ -61,6 +61,6 @@ export const generateWaypoint = () => {
     dateFrom: dateInterval.dateFrom,
     dateTo: dateInterval.dateTo,
     offers: pickOfferElementDependOnValue(type, allTypeOffers),
-    destination: destinations[getRandomInteger(0,TOWNS.length-1)],
+    destination: destinations[getRandomInteger(0,towns.length-1)],
   };
 };

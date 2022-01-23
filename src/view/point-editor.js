@@ -1,9 +1,9 @@
 import SmartView from './smart.js';
 import flatpickr from 'flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
-import { TYPES, TOWNS, Index, TRUE_FLAG, FlagMode } from '../const.js';
+import { types, towns, Index, TRUE_FLAG, FlagMode } from '../const.js';
 import { getRandomElementArr } from '.././utils/common.js';
-import { dateFormat, pickDescriptionElementDependOnValue, pickOfferElementDependOnValue, pickElementDependOnValue } from '.././utils/point.js';
+import { dateFormat, pickOfferElementDependOnValue, pickElementDependOnValue } from '.././utils/point.js';
 import { destinations } from './../mock/point-data.js';
 import dayjs from 'dayjs';
 
@@ -14,10 +14,10 @@ const ValidityMessage = {
 };
 
 const BLANK_POINT = {
-  type: getRandomElementArr(TYPES),
+  type: getRandomElementArr(types),
   offers: [],
   destination: {
-    town: getRandomElementArr(TOWNS),
+    town: getRandomElementArr(towns),
     description: '',
     picture: [],
   },
@@ -64,7 +64,7 @@ const createEventTypeItemTemplate = (availableTypes) => availableTypes.map((type
     <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-1">${type}</label>
     </div>`).join('');
 
-const createTownsTemplate = (TOWNS) => TOWNS.map((city) => `<option value="${city}">`).join('');
+const createTownsTemplate = (items) => items.map((city) => `<option value="${city}">`).join('');
 
 
 const createOfferTemp = (type, offers, allTypeOffers) => {
@@ -104,7 +104,7 @@ const createEditPointTemplate = (data, allTypeOffers, pointMode) => {
         <div class="event__type-list">
           <fieldset class="event__type-group">
             <legend class="visually-hidden">Event type</legend>
-            ${createEventTypeItemTemplate(TYPES)}
+            ${createEventTypeItemTemplate(types)}
           </fieldset>
         </div>
       </div>
@@ -115,7 +115,7 @@ const createEditPointTemplate = (data, allTypeOffers, pointMode) => {
         </label>
         <input class="event__input  event__input--destination" id="event-destination-1" type="text" name="event-destination" value="${destination.town}" list="destination-list-1">
         <datalist id="destination-list-1">
-        ${createTownsTemplate(TOWNS)}
+        ${createTownsTemplate(towns)}
         </datalist>
       </div>
 
@@ -271,8 +271,8 @@ export default class EditTripPoint extends SmartView {
 
 
   _onPointInput(evt) {
-    if (!TOWNS.includes(evt.target.value)) {
-      evt.target.setCustomValidity(`${ValidityMessage.DESTINATION}: ${TOWNS.join(', ')}`);
+    if (!towns.includes(evt.target.value)) {
+      evt.target.setCustomValidity(`${ValidityMessage.DESTINATION}: ${towns.join(', ')}`);
     } else {
       evt.target.setCustomValidity('');
       evt.preventDefault();
@@ -346,7 +346,7 @@ export default class EditTripPoint extends SmartView {
     } else {
       evt.target.setCustomValidity('');
       this.updateData({
-        basePrice: parseInt(evt.target.value),
+        basePrice: evt.target.value,
       },
       TRUE_FLAG,
       );

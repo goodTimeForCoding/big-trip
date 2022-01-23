@@ -1,9 +1,9 @@
 import SmartView from './smart.js';
 import flatpickr from 'flatpickr';
 import '../../node_modules/flatpickr/dist/flatpickr.min.css';
-import { TYPES, TOWNS, Index, TRUE_FLAG} from '../const.js';
+import { TYPES, TOWNS, Index, TRUE_FLAG, FlagMode } from '../const.js';
 import { getRandomElementArr } from '.././utils/common.js';
-import { dateFormat, pickDescriptionElementDependOnValue, pickOfferElementDependOnValue } from '.././utils/point.js';
+import { dateFormat, pickDescriptionElementDependOnValue, pickOfferElementDependOnValue, pickElementDependOnValue } from '.././utils/point.js';
 import { destinations } from './../mock/point-data.js';
 import dayjs from 'dayjs';
 
@@ -68,7 +68,7 @@ const createTownsTemplate = (TOWNS) => TOWNS.map((city) => `<option value="${cit
 
 
 const createOfferTemp = (type, offers, allTypeOffers) => {
-  const availableOffers = allTypeOffers.find((item) => item.type === type).offers;
+  const availableOffers = pickElementDependOnValue(type, allTypeOffers);
   return `<section class="event__section  event__section--offers">
   ${availableOffers.length > 0 ?
     `<h3 class="event__section-title  event__section-title--offers"> Offers</h3> <div class="event__available-offers">
@@ -170,8 +170,8 @@ export default class EditTripPoint extends SmartView {
     this._onOfferChange = this._onOfferChange.bind(this);
 
     this._setInnerListeners();//возвращаем обработчики
-    this._setFromDatePicker();
-    this._setToDatePicker();
+    this._setFromDatePicker(this._FromDatePicker, FlagMode.TRUE);
+    this._setToDatePicker(this._ToDatePicker);
   }
 
   reset(point) {
@@ -277,7 +277,7 @@ export default class EditTripPoint extends SmartView {
       evt.target.setCustomValidity('');
       evt.preventDefault();
       this.updateData({
-        destination: pickDescriptionElementDependOnValue(evt.target.value, destinations),//получаем описание соответствующее выбранному городу
+        destination: pickElementDependOnValue(evt.target.value, destinations, FlagMode.TRUE),//получаем описание соответствующее выбранному городу
       });
     }
     evt.target.reportValidity();
@@ -297,8 +297,10 @@ export default class EditTripPoint extends SmartView {
   }
 
   setRollupBtnClickHandler(callback) {
-    this._callback.rollupBtnClick = callback;
-    this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._OnRollupBtnClick);
+    if (this.getElement().querySelector('.event__rollup-btn') !== null) {
+      this._callback.rollupBtnClick = callback;
+      this.getElement().querySelector('.event__rollup-btn').addEventListener('click', this._OnRollupBtnClick);
+    }
   }
 
   setSaveClickHandler(callback) {

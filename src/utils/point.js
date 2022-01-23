@@ -1,14 +1,20 @@
 import dayjs from 'dayjs';
+import duration from 'dayjs/plugin/duration';
 import {DESCRIPTION_TEXT, TimeFormat} from '../const.js';
 import {getRandomInteger} from './common.js';
+
+
 export const dateFormat = (date, temp) => dayjs(date).format(temp);
+dayjs.extend(duration);
+
+const DAYS_COUNT = 10;
 
 export const pickDescriptionElementDependOnValue = (value, elements) => elements.find((element) => element.town === value);
 
 export const pickOfferElementDependOnValue = (value, elements) => elements.find((element) => element.type === value).offers;
 
 
-//перевод времени в различные форматы
+
 export const converDataAfterCompare = (dateA,dateB) => {
   const timeTo = dateFormat(dateA,'YYYY-MM-DDTHH:mm');
   const timeFrom = dateFormat(dateB,'YYYY-MM-DDTHH:mm');
@@ -25,7 +31,6 @@ export const converDataAfterCompare = (dateA,dateB) => {
   }
   return `${days}D ${hours}H ${minutes}M`;
 };
-
 
 export const generateDescription = (countMin = 1, countMax = 1) => {
   const descriptionArr = [];
@@ -100,3 +105,32 @@ export const isDateExpired = (date) => dayjs().isAfter(date, 'm');
 export const isDateInFuture = (date) => dayjs().isBefore(date, 'm');
 export const isDateCurrent = (date) => dayjs().isSame(date, 'm');
 export const isEventContinues = (dateFrom, dateTo) => isDateExpired(dateFrom) && isDateInFuture(dateTo);
+
+
+export const pickElementDependOnValue = (value, elements, descriptionFlag) => {
+  if (descriptionFlag) {
+    return elements.find((element) => element.name === value);
+  }
+  return elements.find((element) => element.type === value).offers;
+};
+
+export const compareTwoDates = (dateA, dateB) => {
+  if (dateA === null || dateB === null) {
+    return null;
+  }
+  return dayjs(dateA).diff(dateB);
+};
+
+export const humanizeDateDuration = (compareTwoDates) => {
+  const days = Math.floor(compareTwoDates / TimeFormat.MILLISECOND_IN_DAY);
+  const hours = Math.floor((compareTwoDates - days * TimeFormat.MILLISECOND_IN_DAY)/ TimeFormat.MILLISECOND_IN_HOUR);
+  const minutes = Math.round((compareTwoDates - days * TimeFormat.MILLISECOND_IN_DAY - hours * TimeFormat.MILLISECOND_IN_HOUR)/ TimeFormat.MILLISECOND_IN_MINUT);
+
+  if (compareTwoDates < TimeFormat.MILLISECOND_IN_HOUR){
+    return `${minutes}M`;
+  } else if (compareTwoDates > TimeFormat.MILLISECOND_IN_HOUR && compareTwoDates < TimeFormat.MILLISECOND_IN_DAY) {
+    return `${hours}H ${minutes}M`;
+  }
+  return `${days}D ${hours}H ${minutes}M`;
+};
+

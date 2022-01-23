@@ -5,8 +5,9 @@ import PointNewPresenter from './point-new.js';
 import { render, RenderPosition, remove } from '../utils/render.js';
 import PointPresenter from './point.js';
 import { sortPriceUp, sortTimeUp, sortDateUp } from '../utils/point.js';
-import { SortType, UpdateType, UserAction, FilterType, TRUE_FLAG } from '../const.js';
+import { SortType, UpdateType, UserAction, FilterType, TRUE_FLAG, FlagMode } from '../const.js';
 import { filter } from './../utils/filter.js';
+let resetSortType = false;
 
 export default class Trip {
   constructor(tripContainer, pointsModel, filterModel, offersModel) {
@@ -20,8 +21,6 @@ export default class Trip {
 
 
     this._sortComponent = null;
-
-
     this._eventListWrapComponent = new EventListWrapView();
     this._capComponent = new NoPointView();
 
@@ -30,13 +29,13 @@ export default class Trip {
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortTypeChange = this._handleSortTypeChange.bind(this);
 
-    this._pointsModel.addObserver(this._handleModelEvent);//добавляем в подписчики
-    this._filterModel.addObserver(this._handleModelEvent);
 
     this._pointNewPresenter = new PointNewPresenter(this._eventListWrapComponent, this._handleViewAction, this._offers);
   }
 
   init() {
+    this._pointsModel.addObserver(this._handleModelEvent);//добавляем в подписчики
+    this._filterModel.addObserver(this._handleModelEvent);
     this._renderTrip();
   }
 
@@ -58,13 +57,12 @@ export default class Trip {
   }
 
   //перед созданием новой точки сбрасываем всё по ТЗ
-  createPoint() {
-    this._currentSortType = SortType.DAY;
-    this._filterModel.setActiveFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
-    this._pointNewPresenter.init();
+  createPoint(callback) {
+    this._pointNewPresenter.init(callback);
   }
 
   _handleModeChange() {//вызываем у всех point презентеров resetVie() из point.js
+
     this._pointNewPresenter.destroy();
     Object
       .values(this._pointPresenter)
@@ -107,7 +105,7 @@ export default class Trip {
         break;
       case UpdateType.MAJOR:
         //обновит всю доску(при переключении фильтра)
-        this._clearTrip(TRUE_FLAG);
+        this._clearTrip(FlagMode.TRUE);
         this._renderTrip();
         break;
       default:
@@ -139,13 +137,8 @@ export default class Trip {
       this._sortComponent = null;
     }
     this._sortComponent =  new SortBarView(this._currentSortType);
-    render(this._tripContainer, this._sortComponent, RenderPosition.BEFOREEND);
+    render(this._tripContainer, this._sortComponent, RenderPosition.AFTERBEGIN);
     this._sortComponent.setSortTypeChangeHandler(this._handleSortTypeChange);
-  }
-
-  _renderWrap() {
-    // Метод для рендеринга контейнера для поинтов
-    render(this._tripContainer, this._eventListWrapComponent, RenderPosition.BEFOREEND);
   }
 
   _renderPoint(point) {
@@ -156,12 +149,17 @@ export default class Trip {
     this._pointPresenter[point.id] = pointPresenter; //при каждом создании точки маршрута в объект this._pointPresenter записывается экземпляр(инстанс) pointPresenter класса, по ключу id, получаем в объекте весь список экземпляров pointPresenter
   }
 
+  _renderWrap() {
+    // Метод для рендеринга контейнера для поинтов
+    render(this._tripContainer, this._eventListWrapComponent, RenderPosition.BEFOREEND);
+  }
+
   _renderPoints() {
     // Метод для рендеринга N-точек за раз
     this._getPoints().forEach((point) => this._renderPoint(point));
   }
 
-  _clearTrip(resetSortType) {
+  _clearTrip(resetSortType = FlagMode.FALSE) {
     //метод для очистки списка точек маршрута из объекта this._pointPresenter, где сохранены все точки маршрута
     this._pointNewPresenter.destroy();
     Object
@@ -180,6 +178,13 @@ export default class Trip {
     this._offers = this._offersModel.getOffers();
   }
 
+  destroy() {
+    this._clearTrip(FlagMode.TRUE);
+    remove(this._eventListWrapComponent);
+    this._pointsModel.removeObserver(this._handleModelEvent);
+    this._filterModel.removeObserver(this._handleModelEvent);
+  }
+
   _renderTrip() {
     // Метод для инициализации (начала работы) модуля,
     // бОльшая часть текущей функции renderBoard в main.js
@@ -189,6 +194,6 @@ export default class Trip {
     }
     this._renderSort();
     this._renderWrap();
-    this._renderPoints();
+    this._renderPoints(this._getPoints());
   }
 }
